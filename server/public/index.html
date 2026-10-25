@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Display - Pitch Black Viewer</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Markdown & Code Highlight Libraries from CDN for clean rendering -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Socket.io client -->
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="pitch-black">
+  <!-- Minimal Top Header Bar -->
+  <header class="top-bar">
+    <div class="left-section">
+      <span class="status-indicator" id="connectionDot"></span>
+      <span class="status-label" id="connectionStatus">Connecting...</span>
+      <span class="activity-badge" id="activityBadge">Listening...</span>
+    </div>
+    
+    <div class="right-section">
+      <div class="room-selector">
+        <label for="roomInput">Room:</label>
+        <input type="text" id="roomInput" value="default" placeholder="Room code" spellcheck="false" />
+        <button id="joinRoomBtn" title="Switch Room">Join</button>
+      </div>
+
+      <div class="view-controls">
+        <button id="fontDownBtn" title="Decrease Font Size">A-</button>
+        <button id="fontUpBtn" title="Increase Font Size">A+</button>
+        <button id="clearBtn" title="Clear Screen">Clear</button>
+        <button id="fullScreenBtn" title="Full Screen (F11)">⛶</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Answer Stream Container -->
+  <main class="content-container" id="contentContainer">
+    <div class="empty-state" id="emptyState">
+      <div class="radar-pulse"></div>
+      <p class="empty-title">Waiting for audio questions...</p>
+      <p class="empty-subtitle">Connect the Electron app on PC 1 to start receiving instant Gemini answers here without refreshing.</p>
+    </div>
+
+    <!-- Dynamic Answer Cards go here -->
+    <div class="answers-list" id="answersList"></div>
+  </main>
+
+  <!-- Auto-scroll indicator & Quick Jump -->
+  <div class="scroll-fab hidden" id="scrollFab" title="Jump to newest answer">
+    ↓ New Answer Below
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

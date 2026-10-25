@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Audio Controller - PC 1</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Socket.io client -->
+  <script src="../node_modules/socket.io-client/dist/socket.io.min.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Bar -->
+    <header class="app-header">
+      <div class="header-branding">
+        <div class="logo-icon">⚡</div>
+        <div class="header-titles">
+          <h1>Gemini Audio Assistant</h1>
+          <p class="subtitle">PC 1 Audio Loopback & AI Controller</p>
+        </div>
+      </div>
+      
+      <div class="header-status">
+        <div class="status-pill" id="serverStatusPill">
+          <span class="status-dot" id="serverStatusDot"></span>
+          <span id="serverStatusText">Render: Disconnected</span>
+        </div>
+        <div class="status-pill" id="audioStatusPill">
+          <span class="status-dot warning" id="audioStatusDot"></span>
+          <span id="audioStatusText">Audio: Inactive</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <!-- Left Column: Settings & Configuration -->
+      <aside class="sidebar-panel">
+        
+        <!-- 1. Render Server Connection -->
+        <section class="card-section">
+          <h2>1. Render Website Connection</h2>
+          <div class="form-group">
+            <label for="serverUrlInput">Render Server URL</label>
+            <input type="text" id="serverUrlInput" placeholder="https://your-app.onrender.com" spellcheck="false" />
+            <span class="hint">Use <code>http://localhost:3000</code> for local testing, or your deployed Render URL.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="roomInput">Session Room Code</label>
+            <div class="input-with-button">
+              <input type="text" id="roomInput" value="interview-room-1" placeholder="room-name" spellcheck="false" />
+              <button id="copyViewerUrlBtn" title="Copy Web Viewer Link for PC 2">📋 Copy Link</button>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="connectServerBtn" class="btn btn-primary">Connect to Server</button>
+          </div>
+        </section>
+
+        <!-- 2. Gemini API Settings -->
+        <section class="card-section">
+          <h2>2. Gemini AI Authentication</h2>
+          <div class="form-group">
+            <label for="geminiApiKeyInput">Gemini API Key</label>
+            <div class="input-with-button">
+              <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." spellcheck="false" />
+              <button id="toggleApiKeyBtn" class="btn-icon">👁️</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="modelSelect">Gemini Model</label>
+            <select id="modelSelect">
+              <option value="gemini-2.5-flash" selected>gemini-2.5-flash (Fastest & Multimodal)</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash (Standard Fast)</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (Deep Reasoning)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="systemPromptInput">System Role / Custom Prompt</label>
+            <textarea id="systemPromptInput" rows="5" placeholder="Define the AI role and output style..."></textarea>
+            <div class="prompt-quick-presets">
+              <button class="preset-pill" id="presetInterview">Interview Pro</button>
+              <button class="preset-pill" id="presetCoding">Direct LeetCode</button>
+              <button class="preset-pill" id="presetSystemDesign">System Design</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Audio Source Configuration -->
+        <section class="card-section">
+          <h2>3. Audio Source (Current Speaker / Mic)</h2>
+          <div class="form-group">
+            <label for="audioSourceSelect">Capture Source</label>
+            <select id="audioSourceSelect">
+              <option value="speaker" selected>Current Active Speaker Output (System Loopback)</option>
+              <option value="mic">Microphone Only</option>
+              <option value="both">Both (Speaker + Mic Mixed)</option>
+            </select>
+          </div>
+
+          <div class="audio-meter-container">
+            <div class="audio-meter-label">
+              <span>Live Sound Activity:</span>
+              <span id="audioLevelText">0%</span>
+            </div>
+            <div class="audio-meter-bar-bg">
+              <div class="audio-meter-bar-fill" id="audioMeterFill"></div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="toggleAudioCaptureBtn" class="btn btn-secondary">▶ Start Audio Listener</button>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Right Column: Control Center & Live Preview -->
+      <main class="content-panel">
+        
+        <!-- Live Action Banner -->
+        <section class="action-banner">
+          <div class="action-banner-content">
+            <div class="record-state-info">
+              <h2 id="recordingHeading">Standby / Audio Listener Idle</h2>
+              <p id="recordingSubtext">Click "Start Audio Listener" or manually record a question below.</p>
+            </div>
+            
+            <div class="action-buttons-group">
+              <button id="manualRecordBtn" class="btn btn-large btn-record" disabled>
+                <span class="record-circle"></span>
+                <span id="manualRecordText">Record Question (Push)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Text Question Fallback -->
+          <div class="quick-question-box">
+            <input type="text" id="manualQuestionInput" placeholder="Or type/paste question here..." />
+            <button id="sendManualQuestionBtn" class="btn btn-primary">Ask Gemini</button>
+          </div>
+        </section>
+
+        <!-- Realtime Status Banner -->
+        <div class="live-status-alert hidden" id="liveStatusAlert">
+          <div class="spinner"></div>
+          <span id="liveStatusAlertText">Processing with Gemini...</span>
+        </div>
+
+        <!-- Local Preview of Sent Answers -->
+        <section class="preview-section">
+          <div class="preview-header">
+            <h2>Live Feed Sent to PC 2 (Pitch-Black Website)</h2>
+            <div class="preview-controls">
+              <button id="clearAllBtn" class="btn btn-small">Clear Web Screen</button>
+            </div>
+          </div>
+
+          <div class="feed-list" id="feedList">
+            <div class="feed-empty" id="feedEmpty">
+              <p>No questions submitted yet. Captured audio questions and Gemini responses will appear here and sync to your Render website.</p>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
