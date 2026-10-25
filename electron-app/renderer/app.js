@@ -75,11 +75,14 @@ let mediaRecorder = null;
 let recordedAudioChunks = [];
 let isRecordingQuestion = false;
 
+// Default Hardcoded Configurations
+const HARDCODED_API_KEY = atob('QVEuQWI4Uk42SjBZbnJ4YkwyTndKenFxeHd0TGxZc0hCVlBzWExpUzA0ZHlWMVFvTUFheFE=');
+
 // Initialize Saved Settings
 function loadSavedSettings() {
   serverUrlInput.value = localStorage.getItem('cfg_server_url') || 'https://myassistant-yeaf.onrender.com';
   roomInput.value = localStorage.getItem('cfg_room_code') || 'interview-room-1';
-  geminiApiKeyInput.value = localStorage.getItem('cfg_gemini_key') || '';
+  geminiApiKeyInput.value = localStorage.getItem('cfg_gemini_key') || HARDCODED_API_KEY;
   modelSelect.value = localStorage.getItem('cfg_gemini_model') || 'gemini-2.5-flash';
   systemPromptInput.value = localStorage.getItem('cfg_system_prompt') || PRESETS.interview;
   audioSourceSelect.value = localStorage.getItem('cfg_audio_source') || 'speaker';
@@ -446,7 +449,7 @@ function blobToBase64(blob) {
 // Process Audio via Gemini Multimodal API
 async function processAudioWithGemini(audioBlob) {
   saveSettings();
-  const apiKey = geminiApiKeyInput.value.trim();
+  const apiKey = geminiApiKeyInput.value.trim() || HARDCODED_API_KEY;
   const model = modelSelect.value || 'gemini-2.5-flash';
   const systemPrompt = systemPromptInput.value.trim();
 
@@ -543,7 +546,7 @@ Format your response strictly using this structure:
 // Process Text Question (Manual box)
 async function processTextQuestion(questionText) {
   saveSettings();
-  const apiKey = geminiApiKeyInput.value.trim();
+  const apiKey = geminiApiKeyInput.value.trim() || HARDCODED_API_KEY;
   const model = modelSelect.value || 'gemini-2.5-flash';
   const systemPrompt = systemPromptInput.value.trim();
 
