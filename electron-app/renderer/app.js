@@ -77,7 +77,7 @@ let isRecordingQuestion = false;
 
 // Initialize Saved Settings
 function loadSavedSettings() {
-  serverUrlInput.value = localStorage.getItem('cfg_server_url') || 'http://localhost:3000';
+  serverUrlInput.value = localStorage.getItem('cfg_server_url') || 'https://myassistant-yeaf.onrender.com';
   roomInput.value = localStorage.getItem('cfg_room_code') || 'interview-room-1';
   geminiApiKeyInput.value = localStorage.getItem('cfg_gemini_key') || '';
   modelSelect.value = localStorage.getItem('cfg_gemini_model') || 'gemini-2.5-flash';
